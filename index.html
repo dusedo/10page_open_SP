@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URLを10タブで開く</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; padding: 0 10px; }
+        h1 { font-size: 1.8em; }
+        p { font-size: 1em; margin-top: 10px; }
+        .instruction-text { margin-top: 10px; font-size: 1em; line-height: 1.5; }
+        form { margin-top: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        input[type="text"] { padding: 15px; width: 90%; max-width: 400px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; margin: 10px 0; box-sizing: border-box; }
+        button { padding: 15px 25px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; margin: 10px 0; width: 90%; max-width: 400px; }
+        button:hover { background-color: #218838; }
+        .contact-text { margin-top: 40px; font-size: 0.9em; }
+        #resultMessage { margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>URLを10タブで開く</h1>
+    <p class="instruction-text">
+        下の窓にURLを入れて「開く」ボタンを押すと、<br>
+        同じページが別タブで10ページ開きます
+    </p>
+    <form id="urlForm">
+        <input type="text" id="urlInput" placeholder="URLを入力してください" required>
+        <button type="button" id="pasteButton">ペースト</button>
+        <button type="submit">開く</button>
+    </form>
+    <div id="resultMessage"></div>
+    <p class="contact-text">不具合がありましたら <a href="https://x.com/du_sedo" target="_blank">https://x.com/du_sedo</a> までお問い合わせください</p>
+    <script>
+        document.getElementById('pasteButton').addEventListener('click', async function() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('urlInput').value = text;
+            } catch (err) {
+                console.error('Failed to read clipboard contents: ', err);
+                alert('ペーストがサポートされていないか、許可されていません。手動でURLを入力してください。');
+            }
+        });
+
+        document.getElementById('urlForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const url = document.getElementById('urlInput').value;
+            const resultMessage = document.getElementById('resultMessage');
+            let openedTabs = 0;
+
+            for (let i = 0; i < 10; i++) {
+                const newWindow = window.open(url, '_blank');
+                if (newWindow) {
+                    openedTabs++;
+                }
+            }
+
+            if (openedTabs === 0) {
+                resultMessage.textContent = 'ポップアップがブロックされました。ブラウザの設定を確認してください。';
+                resultMessage.style.color = 'red';
+            } else if (openedTabs < 10) {
+                resultMessage.textContent = `${openedTabs}個のタブが開かれました。残りはブロックされた可能性があります。`;
+                resultMessage.style.color = 'orange';
+            } else {
+                resultMessage.textContent = '10個のタブが正常に開かれました。';
+                resultMessage.style.color = 'green';
+            }
+        });
+    </script>
+</body>
+</html>
