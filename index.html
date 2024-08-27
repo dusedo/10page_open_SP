@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URLを繰り返し開く - 自動再試行</title>
+    <title>URLを自動再試行で開く</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 20px; padding: 0 10px; }
         h1 { font-size: 1.8em; }
@@ -18,11 +18,11 @@
     </style>
 </head>
 <body>
-    <h1>URLを繰り返し開く - 自動再試行</h1>
+    <h1>URLを自動再試行で開く</h1>
     <p class="instruction-text">
         下の窓にURLを入れて「開く」ボタンを押すと、<br>
-        同じページが別タブで繰り返し開かれます。<br>
-        ブロックされた場合は自動的に再試行します。
+        新しいタブでページが開かれます。<br>
+        エラーページの場合は自動的に再試行します。
     </p>
     <form id="urlForm">
         <input type="text" id="urlInput" placeholder="URLを入力してください" required>
@@ -31,6 +31,10 @@
     <div id="resultMessage"></div>
     <p class="contact-text">不具合がありましたら <a href="https://x.com/du_sedo" target="_blank">https://x.com/du_sedo</a> までお問い合わせください</p>
     <script>
+        let newWindow = null;
+        let attempts = 0;
+        const maxAttempts = 30; // 最大試行回数
+
         document.getElementById('urlForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const url = document.getElementById('urlInput').value;
@@ -42,45 +46,49 @@
                 return;
             }
 
-            let openedTabs = 0;
-            let attempts = 0;
-            const maxAttempts = 30; // 最大試行回数
-
-            function openTab() {
-                if (attempts < maxAttempts) {
-                    attempts++;
-                    const newWindow = window.open(url, '_blank');
-                    if (newWindow) {
-                        newWindow.addEventListener('load', function() {
-                            if (newWindow.location.href !== 'about:blank') {
-                                openedTabs++;
-                                updateResult();
-                                setTimeout(openTab, 500);
-                            } else {
-                                newWindow.close();
-                                setTimeout(openTab, 100);
-                            }
-                        });
-                    } else {
-                        setTimeout(openTab, 100);
-                    }
-                } else {
-                    updateResult();
-                }
-            }
-
-            function updateResult() {
-                if (openedTabs === 0) {
-                    resultMessage.textContent = 'ポップアップがブロックされました。ブラウザの設定を確認してください。';
-                    resultMessage.style.color = 'red';
-                } else {
-                    resultMessage.textContent = `${openedTabs}個のタブが開かれました。`;
-                    resultMessage.style.color = 'green';
-                }
-            }
-
-            openTab();
+            attempts = 0;
+            openTab(url);
         });
+
+        function openTab(url) {
+            if (attempts < maxAttempts) {
+                attempts++;
+                if (newWindow && !newWindow.closed) {
+                    newWindow.location.href = url;
+                } else {
+                    newWindow = window.open(url, '_blank');
+                }
+                if (newWindow) {
+                    newWindow.addEventListener('load', function() {
+                        checkPage(url);
+                    });
+                } else {
+                    updateResult('ポップアップがブロックされました。ブラウザの設定を確認してください。', 'red');
+                }
+            } else {
+                updateResult('最大試行回数に達しました。ページを開けませんでした。', 'red');
+            }
+        }
+
+        function checkPage(url) {
+            try {
+                if (newWindow.location.href === 'about:blank' || newWindow.document.title.includes('エラー')) {
+                    newWindow.close();
+                    setTimeout(() => openTab(url), 100);
+                } else {
+                    updateResult('ページが正常に開かれました。', 'green');
+                }
+            } catch (e) {
+                // セキュリティ上の理由でアクセスできない場合は成功とみなす
+                updateResult('ページが開かれました（詳細は確認できません）。', 'green');
+            }
+        }
+
+        function updateResult(message, color) {
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.textContent = message;
+            resultMessage.style.color = color;
+        }
     </script>
 </body>
 </html>
