@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URLを自動再試行で開く</title>
+    <title>URL Repeat Opener</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 20px; padding: 0 10px; }
         h1 { font-size: 1.8em; }
@@ -18,11 +18,10 @@
     </style>
 </head>
 <body>
-    <h1>URLを自動再試行で開く</h1>
+    <h1>URL Repeat Opener</h1>
     <p class="instruction-text">
-        下の窓にURLを入れて「開く」ボタンを押すと、<br>
-        新しいタブでページが開かれます。<br>
-        エラーページの場合は自動的に再試行します。
+        下の窓にURLを入れて「開く」ボタンを押すと、同じページが別タブで繰り返し開かれます。<br>
+        エラーページに遷移した場合は自動的に再試行します。
     </p>
     <form id="urlForm">
         <input type="text" id="urlInput" placeholder="URLを入力してください" required>
@@ -63,7 +62,7 @@
                         checkPage(url);
                     });
                 } else {
-                    updateResult('ポップアップがブロックされました。ブラウザの設定を確認してください。', 'red');
+                    updateResult('新しいタブを開けませんでした。ブラウザの設定を確認してください。', 'red');
                 }
             } else {
                 updateResult('最大試行回数に達しました。ページを開けませんでした。', 'red');
@@ -72,13 +71,20 @@
 
         function checkPage(url) {
             try {
-                if (newWindow.location.href === 'about:blank' || newWindow.document.title.includes('エラー')) {
+                // エラーページの判定条件を拡張
+                if (newWindow.location.href === 'about:blank' || 
+                    newWindow.document.title.toLowerCase().includes('error') || 
+                    newWindow.document.title.includes('エラー') ||
+                    newWindow.document.body.innerText.toLowerCase().includes('404 not found') ||
+                    newWindow.document.body.innerText.includes('ページが見つかりません')) {
+                    console.log('エラーページを検出しました。再試行します。');
                     newWindow.close();
                     setTimeout(() => openTab(url), 100);
                 } else {
                     updateResult('ページが正常に開かれました。', 'green');
                 }
             } catch (e) {
+                console.log('ページの確認中にエラーが発生しました:', e);
                 // セキュリティ上の理由でアクセスできない場合は成功とみなす
                 updateResult('ページが開かれました（詳細は確認できません）。', 'green');
             }
