@@ -31,14 +31,13 @@
     <div id="resultMessage"></div>
     <p class="contact-text">不具合がありましたら <a href="https://x.com/du_sedo" target="_blank">https://x.com/du_sedo</a> までお問い合わせください</p>
     <script>
-        document.getElementById('pasteButton').addEventListener('click', async function() {
-            try {
-                const text = await navigator.clipboard.readText();
+        document.getElementById('pasteButton').addEventListener('click', function() {
+            navigator.clipboard.readText().then(text => {
                 document.getElementById('urlInput').value = text;
-            } catch (err) {
+            }).catch(err => {
                 console.error('Failed to read clipboard contents: ', err);
                 alert('ペーストがサポートされていないか、許可されていません。手動でURLを入力してください。');
-            }
+            });
         });
 
         document.getElementById('urlForm').addEventListener('submit', function(event) {
@@ -47,23 +46,34 @@
             const resultMessage = document.getElementById('resultMessage');
             let openedTabs = 0;
 
-            for (let i = 0; i < 10; i++) {
-                const newWindow = window.open(url, '_blank');
-                if (newWindow) {
-                    openedTabs++;
+            function openTab() {
+                if (openedTabs < 10) {
+                    const newWindow = window.open(url, '_blank');
+                    if (newWindow) {
+                        openedTabs++;
+                        setTimeout(openTab, 100);
+                    } else {
+                        showResult();
+                    }
+                } else {
+                    showResult();
                 }
             }
 
-            if (openedTabs === 0) {
-                resultMessage.textContent = 'ポップアップがブロックされました。ブラウザの設定を確認してください。';
-                resultMessage.style.color = 'red';
-            } else if (openedTabs < 10) {
-                resultMessage.textContent = `${openedTabs}個のタブが開かれました。残りはブロックされた可能性があります。`;
-                resultMessage.style.color = 'orange';
-            } else {
-                resultMessage.textContent = '10個のタブが正常に開かれました。';
-                resultMessage.style.color = 'green';
+            function showResult() {
+                if (openedTabs === 0) {
+                    resultMessage.textContent = 'ポップアップがブロックされました。ブラウザの設定を確認してください。';
+                    resultMessage.style.color = 'red';
+                } else if (openedTabs < 10) {
+                    resultMessage.textContent = `${openedTabs}個のタブが開かれました。残りはブロックされた可能性があります。`;
+                    resultMessage.style.color = 'orange';
+                } else {
+                    resultMessage.textContent = '10個のタブが正常に開かれました。';
+                    resultMessage.style.color = 'green';
+                }
             }
+
+            openTab();
         });
     </script>
 </body>
