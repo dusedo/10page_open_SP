@@ -21,7 +21,7 @@
     <h1>URL Repeat Opener</h1>
     <p class="instruction-text">
         下の窓にURLを入れて「開く」ボタンを押すと、同じページが別タブで繰り返し開かれます。<br>
-        エラーページに遷移した場合は自動的に再試行します。
+        エラーページに遷移した場合は自動的にタブを閉じ、再度開きます。
     </p>
     <form id="urlForm">
         <input type="text" id="urlInput" placeholder="URLを入力してください" required>
@@ -71,7 +71,7 @@
 
         function checkPage(url) {
             try {
-                // エラーページの判定条件を拡張
+                // エラーページの判定条件
                 if (newWindow.location.href === 'about:blank' || 
                     newWindow.document.title.toLowerCase().includes('error') || 
                     newWindow.document.title.includes('エラー') ||
@@ -79,7 +79,7 @@
                     newWindow.document.body.innerText.includes('ページが見つかりません')) {
                     console.log('エラーページを検出しました。再試行します。');
                     newWindow.close();
-                    setTimeout(() => openTab(url), 100);
+                    setTimeout(() => openTab(url), 100); // 自動で再試行
                 } else {
                     updateResult('ページが正常に開かれました。', 'green');
                 }
