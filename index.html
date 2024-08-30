@@ -68,7 +68,10 @@
             <input type="text" id="product-url" placeholder="ビックカメラの商品URLを入力">
             <button id="open-button">開く</button>
         </div>
-        <p class="info-text">エラーページに遷移した場合は自動でページを閉じ、再度入力されたURLで開き直します。</p>
+        <p class="info-text">
+            エラーページに遷移した場合は自動でページを閉じ、<br>
+            再度入力されたURLで開き直します。
+        </p>
     </div>
     <script>
         document.getElementById('open-button').addEventListener('click', function () {
@@ -92,11 +95,10 @@
                 }
             }, 5000);
 
-
             newTab.addEventListener('load', function () {
                 try {
                     if (newTab.location.href !== 'https://www.biccamera.com/bc/c/sale/special/sorry_top.html') {
-                        clearInterval(interval);
+                        clearInterval(interval); // 監視を停止する
                     }
                 } catch (e) {
                     console.log('アクセスエラー:', e);
