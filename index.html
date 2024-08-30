@@ -3,98 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URL Repeat Opener</title>
+    <title>ビッカメ突破マン</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; padding: 0 10px; }
-        h1 { font-size: 1.8em; }
-        p { font-size: 1em; margin-top: 10px; }
-        .instruction-text { margin-top: 10px; font-size: 1em; line-height: 1.5; }
-        form { margin-top: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        input[type="text"] { padding: 15px; width: 90%; max-width: 400px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; margin: 10px 0; box-sizing: border-box; }
-        button { padding: 15px 25px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; margin: 10px 0; width: 90%; max-width: 400px; }
-        button:hover { background-color: #218838; }
-        .contact-text { margin-top: 40px; font-size: 0.9em; }
-        #resultMessage { margin-top: 20px; font-weight: bold; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #343a40;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
-    <h1>URL Repeat Opener</h1>
-    <p class="instruction-text">
-        下の窓にURLを入れて「開く」ボタンを押すと、同じページが別タブで繰り返し開かれます。<br>
-        エラーページに遷移した場合は自動的にタブを閉じ、再度開きます。
-    </p>
-    <form id="urlForm">
-        <input type="text" id="urlInput" placeholder="URLを入力してください" required>
-        <button type="submit">開く</button>
-    </form>
-    <div id="resultMessage"></div>
-    <p class="contact-text">不具合がありましたら <a href="https://x.com/du_sedo" target="_blank">https://x.com/du_sedo</a> までお問い合わせください</p>
+    <div class="container">
+        <h1>ビッカメ突破マン</h1>
+        <div class="input-group">
+            <input type="text" id="product-url" placeholder="ビックカメラの商品URLを入力">
+            <button id="open-button">開く</button>
+        </div>
+    </div>
     <script>
-        let newWindow = null;
-        let attempts = 0;
-        const maxAttempts = 30; // 最大試行回数
-
-        document.getElementById('urlForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const url = document.getElementById('urlInput').value;
-            const resultMessage = document.getElementById('resultMessage');
-
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                resultMessage.textContent = '有効なURLを入力してください（http://またはhttps://で始まる必要があります）';
-                resultMessage.style.color = 'red';
+        document.getElementById('open-button').addEventListener('click', function () {
+            const url = document.getElementById('product-url').value;
+            if (!url) {
+                alert('URLを入力してください');
                 return;
             }
 
-            attempts = 0;
-            openTab(url);
+            let newTab = window.open(url, '_blank');
+
+            const interval = setInterval(function () {
+                try {
+                    if (newTab.location.href === 'https://www.biccamera.com/bc/c/sale/special/sorry_top.html') {
+                        newTab.close();
+                        newTab = window.open(url, '_blank');
+                    }
+                } catch (e) {
+                    // 複数ドメイン間でのアクセス時にエラーをキャッチする
+                    console.log('アクセスエラー:', e);
+                }
+            }, 5000);
+
+            newTab.addEventListener('load', function () {
+                try {
+                    if (newTab.location.href !== 'https://www.biccamera.com/bc/c/sale/special/sorry_top.html') {
+                        clearInterval(interval);
+                    }
+                } catch (e) {
+                    console.log('アクセスエラー:', e);
+                }
+            });
         });
-
-        function openTab(url) {
-            if (attempts < maxAttempts) {
-                attempts++;
-                if (newWindow && !newWindow.closed) {
-                    newWindow.location.href = url;
-                } else {
-                    newWindow = window.open(url, '_blank');
-                }
-                if (newWindow) {
-                    newWindow.addEventListener('load', function() {
-                        checkPage(url);
-                    });
-                } else {
-                    updateResult('新しいタブを開けませんでした。ブラウザの設定を確認してください。', 'red');
-                }
-            } else {
-                updateResult('最大試行回数に達しました。ページを開けませんでした。', 'red');
-            }
-        }
-
-        function checkPage(url) {
-            try {
-                // エラーページの判定条件
-                if (newWindow.location.href === 'about:blank' || 
-                    newWindow.document.title.toLowerCase().includes('error') || 
-                    newWindow.document.title.includes('エラー') ||
-                    newWindow.document.body.innerText.toLowerCase().includes('404 not found') ||
-                    newWindow.document.body.innerText.includes('ページが見つかりません')) {
-                    console.log('エラーページを検出しました。再試行します。');
-                    newWindow.close();
-                    setTimeout(() => openTab(url), 100); // 自動で再試行
-                } else {
-                    updateResult('ページが正常に開かれました。', 'green');
-                }
-            } catch (e) {
-                console.log('ページの確認中にエラーが発生しました:', e);
-                // セキュリティ上の理由でアクセスできない場合は成功とみなす
-                updateResult('ページが開かれました（詳細は確認できません）。', 'green');
-            }
-        }
-
-        function updateResult(message, color) {
-            const resultMessage = document.getElementById('resultMessage');
-            resultMessage.textContent = message;
-            resultMessage.style.color = color;
-        }
     </script>
 </body>
 </html>
