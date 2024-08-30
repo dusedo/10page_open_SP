@@ -34,7 +34,7 @@
         }
 
         input[type="text"] {
-            width: 70%;
+            width: 50%;  /* 幅を50%に設定 */
             padding: 10px;
             margin-right: 10px;
             border: 1px solid #ced4da;
@@ -83,14 +83,15 @@
             const interval = setInterval(function () {
                 try {
                     if (newTab.location.href === 'https://www.biccamera.com/bc/c/sale/special/sorry_top.html') {
-                        newTab.close();
-                        newTab = window.open(url, '_blank');
+                        newTab.close(); // タブを閉じる
+                        newTab = window.open(url, '_blank'); // 再度同じURLを開く
                     }
                 } catch (e) {
                     // 複数ドメイン間でのアクセス時にエラーをキャッチする
                     console.log('アクセスエラー:', e);
                 }
             }, 5000);
+
 
             newTab.addEventListener('load', function () {
                 try {
