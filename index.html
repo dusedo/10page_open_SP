@@ -30,6 +30,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            margin-bottom: 10px;
         }
 
         input[type="text"] {
@@ -52,6 +53,12 @@
         button:hover {
             background-color: #0056b3;
         }
+
+        .info-text {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -61,6 +68,7 @@
             <input type="text" id="product-url" placeholder="ビックカメラの商品URLを入力">
             <button id="open-button">開く</button>
         </div>
+        <p class="info-text">エラーページに遷移した場合は自動でページを閉じ、再度入力されたURLで開き直します。</p>
     </div>
     <script>
         document.getElementById('open-button').addEventListener('click', function () {
